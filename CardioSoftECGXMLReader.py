@@ -42,7 +42,7 @@ class CardioSoftECGXMLReader:
                 try:
                     self.Segmentations['Toff'] = int(self.Data['RestingECGMeasurements']['TOffset']['#text'])
                 except:
-                    self.Segmentations['Toff'] = False
+                    self.Segmentations['Toff'] = float('NaN')
 
 
             elif 'FullDisclosure' in self.Data:
