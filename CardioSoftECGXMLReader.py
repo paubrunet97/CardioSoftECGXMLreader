@@ -1,6 +1,12 @@
 import xmltodict
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
+
+# Two types of XML in the LongQT Dataset:
+#   (1) XML containing 'StripData' dictionary, fs=500Hz.
+#   (2) XML containing 'FullDisclosure' dictionary, fs=100Hz.
+# For each of them, different extraction to get an array of size (samplesize, 12) with .getVoltages() method
 
 class CardioSoftECGXMLReader:
     """ Extract voltage data from a CardioSoftECG XML file """
@@ -12,6 +18,25 @@ class CardioSoftECGXMLReader:
             if 'StripData' in self.Data:
                 self.StripData = self.Data['StripData']
                 self.FullDisclosure = False
+
+                self.PID = self.Data['PatientInfo']['PID']
+                self.Sex = self.Data['PatientInfo']['Gender']
+                self.Race = self.Data['PatientInfo']['Race']
+                try:
+                    self.BirthDateTime = datetime.date(
+                        year=int(self.Data['PatientInfo']['BirthDateTime']['Year']),
+                        month=int(self.Data['PatientInfo']['BirthDateTime']['Month']),
+                        day=int(self.Data['PatientInfo']['BirthDateTime']['Day']))
+                except:
+                    self.BirthDateTime = False
+
+                self.ObservationDateTime = datetime.datetime(
+                    year=int(self.Data['ObservationDateTime']['Year']),
+                    month=int(self.Data['ObservationDateTime']['Month']),
+                    day=int(self.Data['ObservationDateTime']['Day']),
+                    hour=int(self.Data['ObservationDateTime']['Hour']),
+                    minute=int(self.Data['ObservationDateTime']['Minute']),
+                    second=int(self.Data['ObservationDateTime']['Second']))
 
                 self.SamplingRate = int(self.StripData['SampleRate']['#text'])
                 self.NumLeads = int(self.StripData['NumberOfLeads'])
@@ -42,12 +67,30 @@ class CardioSoftECGXMLReader:
                 try:
                     self.Segmentations['Toff'] = int(self.Data['RestingECGMeasurements']['TOffset']['#text'])
                 except:
-                    self.Segmentations['Toff'] = float('NaN')
+                    self.Segmentations['Toff'] = False
 
 
             elif 'FullDisclosure' in self.Data:
                 self.StripData = False
                 self.FullDisclosure = self.Data['FullDisclosure']
+
+                self.PID= self.Data['PatientInfo']['PID']
+                self.Sex = self.Data['PatientInfo']['Gender']
+                self.Race = self.Data['PatientInfo']['Race']
+                try:
+                    self.BirthDateTime = datetime.date(
+                        year=int(self.Data['PatientInfo']['BirthDateTime']['Year']),
+                        month=int(self.Data['PatientInfo']['BirthDateTime']['Month']),
+                        day=int(self.Data['PatientInfo']['BirthDateTime']['Day']))
+                except:
+                    self.BirthDateTime = False
+                self.ObservationDateTime = datetime.datetime(
+                    year=int(self.Data['ObservationDateTime']['Year']),
+                    month=int(self.Data['ObservationDateTime']['Month']),
+                    day=int(self.Data['ObservationDateTime']['Day']),
+                    hour=int(self.Data['ObservationDateTime']['Hour']),
+                    minute=int(self.Data['ObservationDateTime']['Minute']),
+                    second=int(self.Data['ObservationDateTime']['Second']))
 
                 self.SamplingRate = int(self.FullDisclosure['SampleRate']['#text'])
                 self.NumLeads = int(self.FullDisclosure['NumberOfChannels'])
